@@ -1,0 +1,9 @@
+GET http://localhost:8080/status
+
+###
+
+POST http://localhost:8080/coin
+
+
+###
+POST http://localhost:8080/turn

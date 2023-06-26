@@ -1,0 +1,6 @@
+//> using lib "dev.zio::zio:2.0.13"
+//> using lib "dev.zio::zio-test:2.0.13"
+//> using lib "dev.zio::zio-test-sbt:2.0.13"
+//> using lib "dev.zio::zio-test-magnolia:2.0.13"
+//> using lib "io.d11::zhttp:2.0.0-RC10"
+//> using lib "dev.zio::zio-json:0.5.0,"
