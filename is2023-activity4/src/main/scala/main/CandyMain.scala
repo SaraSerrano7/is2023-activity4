@@ -17,5 +17,5 @@ object CandyMain extends ZIOAppDefault:
       port = 8080,
       http = CandyAPI()
     ).provide(
-      CandyServiceLive.layer(100)
+      CandyServiceLive.layer(10)
     )

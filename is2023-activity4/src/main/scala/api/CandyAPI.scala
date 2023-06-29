@@ -5,6 +5,9 @@ import zio.json.*
 import zhttp.http.*
 
 import services.CandyService
+import candy.Machine
+import services.MachineStatus
+// import candy.Machine.melonGums
 
 object CandyAPI:
   def apply(): Http[CandyService, Nothing, Request, Response] = 
@@ -22,10 +25,36 @@ object CandyAPI:
 
       // POST /coin
       // TODO: comprobar acciones invalidas
-      case Method.POST -> !! / "coin" => 
+      case Method.POST -> !! / "coin" =>
+
+         CandyService
+          .coinError
+          .catchAll{
+            _ => 
+              CandyService.restart.map {
+                _ => Response.status(Status.BadRequest)
+              }
+          }
+          .map(_ => Response.status(Status.Ok))
+
+        // CandyService.coin.map{
+        //   _ => CandyService.status.map{
+        //     (machine: Machine) => if machine.error then
+        //       Response.status(Status.BadRequest)
+        //       else ???
+        //   }
+        // }
+
         // CandyService.coin.map(_ => Response.status(Status.Ok))
 
-        CandyService.coin.map(_ => Response.status(Status.Ok))
+        // invalidAction("coin").map{
+        //     (invalid: Boolean) => 
+        //       if invalid then Response.status(Status.BadRequest)
+        //       else CandyService.coin.map(_ => Response.status(Status.Ok))
+        // }
+
+        // if invalidAction("coin") then Response.status(Status.BadRequest)
+        // else CandyService.coin.map(_ => Response.status(Status.Ok))
 
         // for 
         //   action <- req.bodyAsString.map(_.fromJson[CandyService])
@@ -36,5 +65,34 @@ object CandyAPI:
 
       // POST /turn
       case Method.POST -> !! / "turn" =>
-        CandyService.turn.map(melonGums => Response.json(melonGums.toJson))
+
+        CandyService
+          .turnError
+          .map{
+            melonGums => Response.json(melonGums.toJson)
+          }
+          .catchAll{
+            _ => CandyService.restart.map{
+              _ => Response.status(Status.BadRequest)
+            }
+          }
+        
+        // CandyService.turn.map(melonGums => Response.json(melonGums.toJson))
+        
+        
+        // if invalidAction("turn") then Response.status(Status.BadRequest)
+        // else CandyService.turn.map(melonGums => Response.json(melonGums.toJson))
+    }
+
+  def invalidAction(action: String): ZIO[CandyService, Nothing, Boolean] =
+    CandyService.status.map{
+      (status: MachineStatus) => 
+        val gums = status.melonGums
+        val lock = status.locked
+        (action, gums, lock) match
+          case (_, gums, _) if gums < 0 => true
+          case ("turn", _, true) => true
+          case ("coin", _, false) => true
+          case _ => false
+        
     }
