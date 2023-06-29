@@ -27,6 +27,7 @@ object CandyServiceLive:
   def layer(melonGums: Int): ZLayer[Any, String, CandyServiceLive] = 
     ZLayer.fromZIO(
       for 
-        ref <- Ref.make(Machine(false, melonGums, 0))
+        ref <-  if melonGums < 0 then ZIO.fail("Negative gums") 
+                else Ref.make(Machine(false, melonGums, 0))
       yield CandyServiceLive(ref)
     )
